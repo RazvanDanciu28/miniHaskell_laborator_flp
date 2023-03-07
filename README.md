@@ -1,1 +1,1 @@
-# miniHaskell_laborator_flp
+# miniHaskell
