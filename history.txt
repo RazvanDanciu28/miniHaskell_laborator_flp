@@ -1,0 +1,5 @@
+:l file.txt
+Nat 2
+Nat 2 + Nat 3
++ Nat 2 Nat 3
+:q
