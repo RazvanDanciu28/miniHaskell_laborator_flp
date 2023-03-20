@@ -4,6 +4,8 @@ module Main where
 import System.IO
 import System.Console.Isocline
 
+import Eval
+import Sugar
 import Exp
 import Parsing
 import Printing
