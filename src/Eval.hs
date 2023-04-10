@@ -78,7 +78,15 @@ substitute toReplace replacement (App exp1 exp2) = App (substitute toReplace rep
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 1}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
 normalize :: Exp -> Exp
-normalize = undefined
+normalize e = maybe e normalize (step e)
+    where
+        step (X x) = Nothing
+        step (Lam x e) = Lam x <$> step e
+        step (App (Lam x ex) e) = Just (substitute x e ex)
+        step (App e1 e2)
+            = case step e1 of
+                Nothing -> App e1 <$> step e2
+                Just e1' -> Just (App e1' e2)
 
 -- >>> normalize (X (makeIndexedVar "x"))
 -- X (IndexedVar {ivName = "x", ivCount = 0})
