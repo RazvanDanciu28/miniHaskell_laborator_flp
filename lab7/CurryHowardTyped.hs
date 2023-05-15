@@ -25,75 +25,77 @@ implIntro :: (a -> b) -> (a -> b)                   -- implication introduction
 implIntro f = f
 
 implElim :: (a -> b) -> a -> b                      -- implication elimination
-implElim a b = a b
+implElim f = f
 
 andIntro :: a -> b -> And a b                       -- and introduction
-andIntro a b = And a b
+andIntro a b = And a b 
 
 andElimL :: And a b -> a                            -- and elimination 1
-andElimL = undefined
+andElimL and = proj1 and
 
 andElimR :: And a b -> b                            -- and elimination 2
-andElimR = undefined
+andElimR and = proj2 and 
 
 orIntroL :: a -> Or a b                             -- or introduction 1
-orIntroL = undefined
+orIntroL a = Left a
 
 orIntroR :: b -> Or a b                             -- or introduction 2
-orIntroR = undefined
+orIntroR b = Right b
 
 orElim :: Or a b -> (a -> c) -> (b -> c) -> c       -- or elimination
-orElim = undefined
+orElim orAB fac fbc = case orAB of
+  Left a -> fac a
+  Right b -> fbc b
 
 notElim :: Not p -> p -> c                          -- not elimination 
-notElim = undefined
+notElim notA a = falseElim (notA a)
 
 notIntro :: (forall p. a -> p) -> Not a             -- not introduction
-notIntro _ = undefined
+notIntro f = f
 
 iffIntro :: (a -> b) -> (b -> a) -> Iff a b         -- iff introduction
-iffIntro = undefined
+iffIntro fab fba = And fab fba 
 
 iffElimL :: Iff a b -> a -> b                       -- iff elimination 1
-iffElimL = undefined
+iffElimL (And fab _fba) a = fab a
 
 iffElimR :: Iff a b -> b -> a                       -- iff elimination 1
-iffElimR = undefined
+iffElimR (And _fab fba) b = fba b
 
 -- Hilbert-style axiomatization for intuitionistic propositional logic
 
 ax1 :: a -> b -> a
-ax1 = undefined
+ax1 a b = implIntro (\a -> implIntro (\b -> a)) a b 
 
 ax2 :: (a -> b) -> (a -> (b -> c)) -> a -> c
-ax2 = undefined
+ax2 f g a = implIntro (\a -> implIntro (\g -> implIntro (\a -> implElim (implElim g a) (implElim f a)))) f g a 
 
 ax3 :: a -> b -> And a b
-ax3 = undefined
+ax3 = implIntro (\a -> implIntro (\b -> andIntro a b)) a b 
 
 ax4 :: And a b -> a
-ax4 = undefined
+ax4 = andElimL
 
 ax5 :: And a b -> b
-ax5 = undefined
+ax5 = andElimR
 
 ax6 :: a -> Or a b
-ax6 = undefined
+ax6 = orIntroL
 
 ax7 :: b -> Or a b
-ax7 = undefined
+ax7 = orIntroR
 
 ax8 :: (a -> c) -> (b -> c) -> Or a b -> c
-ax8 = undefined
+ax8 ac bc ab = orElim ab ac bc
 
 ax9 :: (a -> b) -> (a -> Not b) -> Not a
-ax9 = undefined
+ax9 ab anb = notIntro (\a -> notElim (implElim anb a) (implElim ab a))
 
 ax10 :: Not a -> a -> b
-ax10 = undefined
+ax10 na a = notElim na a
 
 modusPonens :: (a -> b) -> a -> b
-modusPonens = undefined
+modusPonens f = f 
 
 -- Several tautologies
 
@@ -101,7 +103,7 @@ pNPFalse :: p -> Not p -> False
 pNPFalse = undefined
 
 deMorgan1 :: And (Not p) (Not q) -> Not (Or p q)
-deMorgan1 = undefined
+deMorgan1 = implIntro (\andn -> (\or -> orElim or (andElimL andn) (andElimR andn)))
 
 deMorgan2 :: Not (Or p q) -> And (Not p) (Not q)
 deMorgan2 = undefined
@@ -125,3 +127,4 @@ doubleNegImplExcludedMiddle dn = undefined
 
 classicDeMorgan4 :: ExcludedMiddle -> DeMorgan4
 classicDeMorgan4 em = undefined
+
