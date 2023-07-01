@@ -39,13 +39,12 @@ desugarExp (List ces)
   where
     cons e l = App (App consExp e) l
 desugarExp (Nat n)
-   = foldr successor zeroExp (replicate (fromIntegral n) ())
+  = foldr successor zeroExp (replicate (fromIntegral n) ())
   where
     successor _ n = App succExp n
 
 -- >>> desugarExp (Nat 3)
 -- App (X (IndexedVar {ivName = "S", ivCount = 0})) (App (X (IndexedVar {ivName = "S", ivCount = 0})) (App (X (IndexedVar {ivName = "S", ivCount = 0})) (X (IndexedVar {ivName = "Z", ivCount = 0}))))
-
 
 sugarExp :: Exp -> ComplexExp
 sugarExp (X x) = CX (sugarVar x)

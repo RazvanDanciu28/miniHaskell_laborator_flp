@@ -1,4 +1,3 @@
-
 module Parsing where
 
 import Exp
@@ -32,6 +31,17 @@ varExp = CX <$> var
 -- Just (CX (Var {getVar = "b"}))
 
 lambdaExp :: Parser ComplexExp
+lambdaExp
+  = do
+    symbol "\\"
+    x <- var
+    symbol "->"
+    e <- expr
+    return $ CLam x e 
+-- >>> parseFirst lambdaExp "\\x -> x"
+-- Just (CLam (Var {getVar = "x"}) (CX (Var {getVar = "x"})))
+
+letExp :: Parser ComplexExp
 letExp
   = do
     symbol "let"
@@ -44,7 +54,7 @@ letExp
 -- >>> parseFirst letExp "let x := y in z"
 -- Just (Let (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 
-letExp :: Parser ComplexExp
+letrecExp :: Parser ComplexExp
 letrecExp
   = do
     symbol "letrec"
@@ -56,11 +66,6 @@ letrecExp
     return $ LetRec x ex e
 -- >>> parseFirst letrecExp "letrec x := y in z"
 -- Just (LetRec (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
-
-letrecExp :: Parser ComplexExp
-letrecExp = undefined
--- >>> testParse letrecExp "letrec x := y in z"
--- LetRec (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"}))
 
 listExp :: Parser ComplexExp
 listExp = List <$> brackets (commaSep expr)
@@ -89,10 +94,6 @@ basicExp
 -- >>> parseFirst basicExp "[a,b,c]"
 -- Just (List [CX (Var {getVar = "a"}),CX (Var {getVar = "b"}),CX (Var {getVar = "c"})])
 
-aux :: [ComplexExp] -> ComplexExp
-aux [x] = x
-aux (x:xs) = CApp x  $ aux xs
-
 expr :: Parser ComplexExp
 expr = foldl1 CApp <$> some basicExp
 -- >>> parseFirst expr "\\x -> x y z t"
@@ -102,4 +103,3 @@ exprParser :: Parser ComplexExp
 exprParser = whiteSpace *> expr <* endOfInput
 -- >>> parseFirst exprParser "let x := 28 in \\y -> + x y"
 -- Just (Let (Var {getVar = "x"}) (Nat 28) (CLam (Var {getVar = "y"}) (CApp (CApp (CX (Var {getVar = "+"})) (CX (Var {getVar = "x"}))) (CX (Var {getVar = "y"})))))
-

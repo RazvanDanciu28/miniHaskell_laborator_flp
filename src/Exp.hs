@@ -29,4 +29,3 @@ data Exp
   | Lam IndexedVar Exp
   | App Exp Exp
   deriving (Show)
-

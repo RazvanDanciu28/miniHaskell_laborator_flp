@@ -1,4 +1,3 @@
-
 module Eval where
 
 import Exp
@@ -9,6 +8,8 @@ vars (X x) = [x]
 vars (App e1 e2) = vars e1 `union` vars e2
 vars (Lam x e) = [x] `union` vars e
 
+-- >>> vars (Lam (makeIndexedVar "x") (X (makeIndexedVar "y")))
+-- [IndexedVar {ivName = "x", ivCount = 0},IndexedVar {ivName = "y", ivCount = 0}]
 
 freeVars :: Exp -> [IndexedVar]
 freeVars (X x) = [x]
@@ -17,8 +18,6 @@ freeVars (Lam x e) = delete x (freeVars e)
 
 -- >>> freeVars (Lam (makeIndexedVar "x") (X (makeIndexedVar "y")))
 -- [IndexedVar {ivName = "y", ivCount = 0}]
-
-
 
 occursFree :: IndexedVar -> Exp -> Bool
 x `occursFree` e = x `elem` freeVars e
@@ -38,8 +37,6 @@ freshVar x xs = x {ivCount = m + 1}
 -- >>> freshVar (makeIndexedVar "x") [makeIndexedVar "x"]
 -- IndexedVar {ivName = "x", ivCount = 1}
 
-
-
 renameVar :: IndexedVar -> IndexedVar -> Exp -> Exp
 renameVar toReplace replacement = go
   where
@@ -48,8 +45,6 @@ renameVar toReplace replacement = go
     go (App e1 e2) = App (go e1) (go e2)
     go (Lam x e)
       = Lam (if x == toReplace then replacement else x) (go e)
-
-
 
 substitute :: IndexedVar -> Exp -> Exp -> Exp
 substitute toReplace replacement = go
@@ -66,7 +61,8 @@ substitute toReplace replacement = go
       | otherwise = Lam x (go e)
 
 normalize :: Exp -> Exp
-where
+normalize e = maybe e normalize (step e)
+  where
     step (X x) = Nothing
     step (Lam x e) = Lam x <$> step e
     step (App (Lam x ex) e) = Just (substitute x e ex)
